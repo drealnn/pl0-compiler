@@ -1,0 +1,40 @@
+# depslib dependency file v1.0
+1436522014 source:c:\users\daniel\desktop\parser\scanner.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"vector.h"
+
+1433969900 c:\users\daniel\desktop\parser\vector.h
+
+1434130622 source:c:\users\daniel\desktop\parser\vector.c
+	<stdio.h>
+	<stdlib.h>
+	"vector.h"
+
+1436525308 source:c:\users\daniel\desktop\parser\compiler\main.c
+	<stdio.h>
+	<stdlib.h>
+
+1436526456 source:c:\users\daniel\desktop\parser\compiler\scanner.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"vector.h"
+	"tokenEnum.h"
+
+1433969900 c:\users\daniel\desktop\parser\compiler\vector.h
+
+1434130622 source:c:\users\daniel\desktop\parser\compiler\vector.c
+	<stdio.h>
+	<stdlib.h>
+	"vector.h"
+
+1436544540 source:c:\users\daniel\desktop\parser\compiler\parser.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"tokenEnum.h"
+
+1436526413 c:\users\daniel\desktop\parser\compiler\tokenenum.h
+
