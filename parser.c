@@ -26,6 +26,8 @@ int getToken();
 char * getIdentifier();
 int getNumber();
 
+void cleanArray();
+
 FILE* fp;
 
 symbol symbolTable[MAX_SYMBOL_TABLE_SIZE];
@@ -33,11 +35,13 @@ symbol symbolTable[MAX_SYMBOL_TABLE_SIZE];
 int numOfSymbols;
 int numOfVars;
 int currentToken;
+char ident[12];
 
 int parser()
 {
   fp = fopen("lexemelist.txt", "r");
-
+  
+  int i = 1;
 
   if (fp == NULL)
   {
@@ -47,6 +51,7 @@ int parser()
 
   }
 
+  
   numOfSymbols = 0;
   numOfVars = 0;
 
@@ -66,9 +71,19 @@ int getToken()
 
 char * getIdentifier()
 {
-   char *ident;
+   cleanArray(ident, 12);
    fscanf(fp, "%s", ident);
    return ident;
+}
+
+void cleanArray(char* input, int size)
+{
+  int i;
+  
+  for (i = 0; i < size; i++)
+  {
+    input[i] = '\0';
+  }
 }
 
 int getNumber()
@@ -86,10 +101,11 @@ int errorMSG(char * str)
 
 void program()
 {
+    
     currentToken = getToken();
-
+    
     block();
-
+  
     if (currentToken != periodsym)
         errorMSG("COMPILE ERROR: \'.\' expected at end of program");
 }
@@ -159,6 +175,22 @@ void block()
 
        currentToken = getToken();
     }
+  
+    if (currentToken == procsym)
+    {
+      currentToken = getToken();
+      if (currentToken != identsym)
+        errorMSG("COMPILE ERROR: Identifier must follow procedure");
+      getIdentifier();  //Do something with this
+      currentToken = getToken();
+      if (currentToken != semicolonsym)
+        errorMSG("COMPILE ERROR: Semicolon expected following procedure declaration");
+      currentToken = getToken();
+      block();
+      if (currentToken != semicolonsym)
+        errorMSG("COMPILE ERROR: Semicolon expected");
+      currentToken = getToken();
+    }
 
     statement();
 
@@ -169,6 +201,8 @@ void statement()
     if (currentToken == identsym)
     {
         // get ident
+        getIdentifier(); //Do something with this.
+      
         currentToken = getToken();
         if (currentToken != becomessym)
             errorMSG("COMPILER ERROR: assignment operator expected");
@@ -176,6 +210,16 @@ void statement()
 
         expression();
 
+    }
+    else if (currentToken == callsym)
+    {
+      currentToken = getToken();
+      if (currentToken != identsym)
+        errorMSG("COMPILER ERROR: Identification symbol expected.");
+      
+      getIdentifier();  //Do something with this.
+      
+      currentToken = getToken();
     }
     else if (currentToken == beginsym)
     {
@@ -193,4 +237,109 @@ void statement()
 
         currentToken = getToken();
     }
+    else if (currentToken == ifsym)
+    {
+      currentToken = getToken();
+      condition();
+      if (currentToken != thensym)
+        errorMSG("COMPILER ERROR: THEN not found");
+      currentToken = getToken();
+      statement();
+    }
+    else if (currentToken == elsesym)
+    {
+      currentToken = getToken();
+      statement();
+    }
+    else if (currentToken == writesym || currentToken == readsym)
+    {
+      currentToken = getToken();
+      if (currentToken != identsym)
+        errorMSG("COMPILER ERROR: Read/Write must be followed by identifier.");
+      getIdentifier(); //Do something with it.
+      currentToken = getToken();
+    }
+    else if (currentToken == whilesym)
+    {
+      currentToken = getToken();
+      condition();
+      if (currentToken != dosym)
+        errorMSG("COMPILER ERROR: DO expected.");
+      currentToken = getToken();
+      statement();
+    }
+  
+}
+
+void condition()
+{
+  if (currentToken == oddsym)
+  {
+    currentToken = getToken();
+    expression();
+  }
+  else
+  {
+    expression();
+    if (relation(currentToken) < 1)
+      errorMSG("COMPILER ERROR: Relation symbol expected.");
+    currentToken = getToken();
+    expression();
+  }
+}
+
+int relation(int token)
+{
+  if (token > 8 && token < 15)
+    return 1;
+  else
+    return 0;
+}
+
+void expression()
+{
+  if (currentToken == plussym || currentToken == minussym)
+    currentToken = getToken();
+  term();
+  
+  while(currentToken == plussym || currentToken == minussym)
+  {
+    currentToken = getToken();
+    term();
+  }
+
+}
+
+void term()
+{
+  factor();
+  while (currentToken == multsym || currentToken == slashsym)
+  {
+    currentToken = getToken();
+    factor();
+  }
+}
+
+void factor()
+{
+  if (currentToken == identsym)
+  {
+    getIdentifier(); //Do Something with this.
+    currentToken = getToken();
+  }
+    
+  else if (currentToken == numbersym)
+  {
+    getNumber(); //Do something with this.
+    currentToken = getToken();
+  }
+  else if (currentToken == lparentsym)
+  {
+    currentToken = getToken();
+    expression();
+    if (currentToken != rparentsym)
+      errorMSG("COMPILER ERROR: Right parenthesis expected.");
+  }
+  else
+    errorMSG("COMPILER ERROR: Factor expected.");
 }

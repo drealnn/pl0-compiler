@@ -496,6 +496,8 @@ void outputLexList()
   FILE* outPtr = fopen("lexemelist.txt", "w");
 
   fprintf(outPtr, "%s", aryLexList.data);
+  
+  fclose(outPtr);
 }
 
 int hasWordAtPos(char * subStr, int index)
