@@ -339,6 +339,12 @@ void statement()
     {
 
         symbol newSym = LookupSymbol(getIdentifier());
+
+        if (newSym.name[0] == '\0')
+        {
+            errorMSG("COMPILER ERROR: Undefined symbol");
+        }
+
         if (newSym.kind != 2)
             errorMSG("COMPILER ERROR: Assignment to constant or procedure is not allowed");
 
@@ -553,6 +559,11 @@ void factor()
   {
     // load variable or constant into the stack from the symbol table
     symbol newSym = LookupSymbol(getIdentifier()); //Do Something with this.
+
+    if (newSym.name[0] == '\0')
+        {
+            errorMSG("COMPILER ERROR: Undefined symbol");
+        }
 
     if (newSym.kind == 1)
         insertInst("lit", 0, newSym.val);

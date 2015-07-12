@@ -4,4 +4,4 @@ begin
 x := 7 + a;
 y := x + b + 3;
 z := x + 3 * 9 / (3 + 2*b) - 2 + y*8;
-end.nt Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine ComponentsÝºuÓ
+end.nt Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components1…R÷„x
