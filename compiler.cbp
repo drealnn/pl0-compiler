@@ -40,6 +40,10 @@
 		<Unit filename="scanner.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="stack.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="stack.h" />
 		<Unit filename="tokenEnum.h" />
 		<Unit filename="vector.c">
 			<Option compilerVar="CC" />

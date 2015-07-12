@@ -392,7 +392,7 @@ void statement()
 
         currentToken = getToken();
     }
-    //TODO:
+
     else if (currentToken == ifsym)
     {
       currentToken = getToken();
@@ -400,7 +400,20 @@ void statement()
       if (currentToken != thensym)
         errorMSG("COMPILER ERROR: THEN not found");
       currentToken = getToken();
+
+     // if conditional fails, execute jump instruction skipping if body
+      int jmpInsIndex = numOfIns;
+      insertInst("jpc", 0, -1);
+
       statement();
+
+      // update the jump instruction with the correct PC value pointing to the end of the "if" body.
+      instruction jump = assemblyCode[jmpInsIndex];
+      jump.m = numOfIns;
+      assemblyCode[jmpInsIndex] = jump;
+
+
+
     }
     // NOTE: code gen needed for HW4
     else if (currentToken == elsesym)
@@ -450,11 +463,27 @@ void statement()
     else if (currentToken == whilesym)
     {
       currentToken = getToken();
+
+      int conditionIndex = numOfIns; // index pointing to top of while loop
+
       condition();
       if (currentToken != dosym)
         errorMSG("COMPILER ERROR: DO expected.");
       currentToken = getToken();
-      statement();
+
+      // if conditional fails, execute jump instruction skipping "while" body
+      int jmpInsIndex = numOfIns;
+      insertInst("jpc", 0, -1);
+
+      statement(); // body of loop
+
+      // add an unconditional jump to loop back to the start of the "while" body
+      insertInst("jmp", 0, conditionIndex);
+
+      // update the conditional jump instruction with the correct PC value pointing to the end of the "while" body.
+      instruction jump = assemblyCode[jmpInsIndex];
+      jump.m = numOfIns;
+      assemblyCode[jmpInsIndex] = jump;
     }
 
 }
@@ -465,16 +494,53 @@ void condition()
   {
     currentToken = getToken();
     expression();
+    executeStackLeftovers();
+
+
+    insertInst("opr", 0, 6);
+    // if odd->1 on top of stack, else 0
+
   }
   else
   {
     expression();
+    executeStackLeftovers();
+
     if (relation(currentToken) < 1)
       errorMSG("COMPILER ERROR: Relation symbol expected.");
+
+    int currRelation = currentToken;
+
     currentToken = getToken();
     expression();
-  }
-}
+    executeStackLeftovers();
+
+    // compare top two items (calculated expressions) in the stack
+    switch (currRelation)
+    {
+    case(eqlsym):
+        insertInst("opr", 0, 8);
+        break;
+    case(neqsym):
+        insertInst("opr", 0, 9);
+        break;
+    case(lessym):
+        insertInst("opr", 0, 10);
+        break;
+    case(leqsym):
+        insertInst("opr", 0, 11);
+        break;
+    case(gtrsym):
+        insertInst("opr", 0, 12);
+        break;
+    case(geqsym):
+        insertInst("opr", 0, 13);
+        break;
+    }// end switch
+
+  }// end if
+
+}//end function
 
 int relation(int token)
 {

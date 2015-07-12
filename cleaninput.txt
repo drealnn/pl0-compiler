@@ -1,7 +1,11 @@
-const a = 7, b = 3;
-var x, y, z;
+var i, n, ans;
 begin
-x := 7 + a;
-y := x + b + 3;
-z := x + 3 * 9 / (3 + 2*b) - 2 + y*8;
-end.nt Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components1…R÷„x
+ i := 0;
+ n := 10;
+ ans := 0;
+ while i < n do
+  begin
+  if odd i then ans := ans + i;
+  i := i + 1;
+ end;
+end.PT;C:\Program Files (x86)\Intel\Intel(R) Management Engine ComponentsZq·ãÏ
