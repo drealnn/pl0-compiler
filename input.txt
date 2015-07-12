@@ -1,19 +1,7 @@
-const m = 7, n = 85;  
-var i,x,y,z,q,r;  
-procedure mult; 
-	var a, b;  
-	begin
-		a := x;  b := y; z := 0;   
-		while b > 0 do
-		begin
-			if odd x then z := z+a;       
-				a := 2*a; 
-				b := b/2;     
-		end
-end;
-
+const a = 7, b = 3;
+var x, y, z;
 begin
-	x:=m;
-	y:=n;
-	call mult;
+x := 7 + a;
+y := x + b + 3;
+z := x + 3 * 9 / (3 + 2*b) - 2 + y*8;
 end.

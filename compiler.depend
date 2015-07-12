@@ -38,3 +38,37 @@
 
 1436526413 c:\users\daniel\desktop\parser\compiler\tokenenum.h
 
+1436525308 source:c:\users\daniel\desktop\parser\compiler\compiler\main.c
+	<stdio.h>
+	<stdlib.h>
+
+1434130622 source:c:\users\daniel\desktop\parser\compiler\compiler\vector.c
+	<stdio.h>
+	<stdlib.h>
+	"vector.h"
+
+1433969900 c:\users\daniel\desktop\parser\compiler\compiler\vector.h
+
+1436700786 source:c:\users\daniel\desktop\parser\compiler\compiler\parser.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"tokenEnum.h"
+	"stack.h"
+
+1436526413 c:\users\daniel\desktop\parser\compiler\compiler\tokenenum.h
+
+1436688694 c:\users\daniel\desktop\parser\compiler\compiler\stack.h
+
+1436653476 source:c:\users\daniel\desktop\parser\compiler\compiler\scanner.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"vector.h"
+	"tokenEnum.h"
+
+1436699856 source:c:\users\daniel\desktop\parser\compiler\compiler\stack.c
+	<stdio.h>
+	<stdlib.h>
+	"stack.h"
+
