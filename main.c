@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
     int l = 0;
     int a = 0;
     int v = 0;
-  
+
     for (i = 0; i < argc; i++)
     {
       if (strcmp(argv[i], "-l") == 0)
@@ -20,8 +20,9 @@ int main(int argc, char *argv[])
 
     scanner(l);
     parser(a);
-  
-    
-  
+    vm(v);
+
+
+
     return 0;
 }

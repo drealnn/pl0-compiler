@@ -8,4 +8,4 @@ begin
   if odd i then ans := ans + i;
   i := i + 1;
  end;
-end.PT;C:\Program Files (x86)\Intel\Intel(R) Management Engine ComponentsZq∑„œ
+end.PT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components°ú|£Æ+
