@@ -66,9 +66,12 @@ char ident[12];
 
 const char *opStringAry2[] = {"lit","opr","lod","sto","cal","inc","jmp","jpc","sio"};
 
+int printAssembly = 0;
+
 //-----MAIN ---------------------------------------------------
-int parser()
+int parser(int a)
 {
+  printAssembly = a;
   fp = fopen("lexemelist.txt", "r");
 
   int i = 1;
@@ -88,7 +91,7 @@ int parser()
 
   program();
 
-  printf("Program is syntactically correct.\n");
+  printf("No errors, program is syntactically correct.\n");
   outputAssembly("mcode.txt");
 
   fclose(fp);
@@ -103,8 +106,11 @@ void outputAssembly(const char* fileName)
     int i;
     FILE* fpOut = fopen(fileName, "w");
     for (i = 0; i < numOfIns; i++)
+    {
         fprintf(fpOut, "%d %d %d\n", assemblyCode[i].op, assemblyCode[i].l, assemblyCode[i].m);
-
+        if (printAssembly > 0)
+          printf("%d %d %d\n", assemblyCode[i].op, assemblyCode[i].l, assemblyCode[i].m);
+    }
     fclose(fpOut);
 
 

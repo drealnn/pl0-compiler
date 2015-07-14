@@ -33,7 +33,7 @@ char* IntToString(int number);     // Takes an integer and returns it in string 
 int hasWordAtPos(char * subStr, int index); // checks codeAry for specified token
 
 
-void scanner()
+void scanner(int printLex)
 {
     vectorInit(&codeAry);
     vectorInit(&aryLexTable);
@@ -53,6 +53,10 @@ void scanner()
    //vectorFree(&codeAry);
 
    // return 0;
+  
+    if (printLex > 0)
+      printf("%s\n", aryLexList.data);
+  
 }
 
 void cleanLexeme()
@@ -329,7 +333,8 @@ void lexemeTable()
             if ( strlen(token.lexeme) >= 11 )
             {
                 // print error message
-                printf("Identifier too long.\n");
+                printf("COMPILE ERROR: Identifier too long.\n");
+                exit(1);
                 token.class = -1;
                 cleanLexeme();
             }
