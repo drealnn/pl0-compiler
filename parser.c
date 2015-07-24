@@ -312,10 +312,6 @@ void block()
 
     }
 
-    //dumpSymbolTable();
-
-    // increment the stack pointer, including the initialized variables
-       insertInst("inc", 0, 4 + numOfVars);
 
     // Nested procedure declaration
     // NOTE: code gen needed for HW4
@@ -329,12 +325,18 @@ void block()
       if (currentToken != semicolonsym)
         errorMSG("COMPILE ERROR: Semicolon expected following procedure declaration");
       currentToken = getToken();
+
       block();
+
       if (currentToken != semicolonsym)
         errorMSG("COMPILE ERROR: Semicolon expected");
       currentToken = getToken();
-    }
 
+    }
+  
+    // increment the stack pointer, including the initialized variables
+    insertInst("inc", 0, 4 + numOfVars);
+  
     statement();
 
 }
@@ -392,9 +394,10 @@ void statement()
             currentToken = getToken();
             statement();
         }
-
-        if (currentToken != endsym)
-            errorMSG("COMPILER ERROR: \'END\' not found");
+        
+        if (currentToken != endsym){
+          printf("Token supposed to be end: %d\n", currentToken);
+          errorMSG("COMPILER ERROR: \'END\' not found");}
 
         currentToken = getToken();
     }
@@ -418,15 +421,15 @@ void statement()
       jump.m = numOfIns;
       assemblyCode[jmpInsIndex] = jump;
 
-
+      // NOTE: code gen needed for HW4
+      if (currentToken == elsesym)
+      {
+        currentToken = getToken();
+        statement();
+      }
 
     }
-    // NOTE: code gen needed for HW4
-    else if (currentToken == elsesym)
-    {
-      currentToken = getToken();
-      statement();
-    }
+    
 
     else if (currentToken == writesym || currentToken == readsym)
     {
