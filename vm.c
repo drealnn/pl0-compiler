@@ -192,7 +192,6 @@ void instructionDecode()
     case(4):
     //"sto";
         stack[base(bp, ir.l) + ir.m] = stack[sp];  
-        fprintf(out, "\nBase: %d\n", base(bp,ir.l));
         sp--;                                       // pop the stack
           // store value l levels down to index m
         break;
