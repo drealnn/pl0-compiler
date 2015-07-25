@@ -177,14 +177,15 @@ void instructionDecode()
         oprExecute(ir.m);
         break;
     case(3):
-    //"lod";
-        stack[sp] = stack[base(bp, ir.l) - 1 + ir.m];   // load from l levels down at index m
+    //"lod"; 
         sp++;                                       // push the stack
+        stack[sp] = stack[base(bp, ir.l) + ir.m];   // load from l levels down at index m
         break;
     case(4):
     //"sto";
+        stack[base(bp, ir.l) + ir.m] = stack[sp];   
         sp--;                                       // pop the stack
-        stack[base(bp, ir.l) - 1 + ir.m] = stack[sp];   // store value l levels down to index m
+          // store value l levels down to index m
         break;
     case(5):
     //"cal";
@@ -428,5 +429,3 @@ int peeki(stacknode* head)
         return -1;
     return head->val;
 }
-
-

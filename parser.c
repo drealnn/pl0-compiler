@@ -62,7 +62,7 @@ instruction assemblyCode[500];
 // stack that performs postfix processing for arithmetic expressions
 stackNode * expressionStack;
 
-int numOfIns;
+int numOfIns = 0;
 int numOfSymbols;
 int numOfVars;
 int currentToken;
@@ -162,7 +162,7 @@ symbol LookupSymbol(char* name, int level)
 {
    int i;
    int maxLevel = 0;
-   symbol *tempSymbol;
+   symbol *tempSymbol = (symbol*)malloc(sizeof(symbol));
    tempSymbol->name[0] = '\0';
    for (i = 0; i < numOfSymbols; i++)
    {
@@ -178,8 +178,6 @@ symbol LookupSymbol(char* name, int level)
                    tempSymbol = &symbolTable[i];
                }
            }
-
-
        }
    }
 
@@ -241,8 +239,6 @@ void executeStackLeftovers()
 
 void program()
 {
-    // jump instruction to main? (will be needed for hw4)
-
     currentToken = getToken();
 
     lexiLevel = 0;
@@ -341,6 +337,7 @@ void block()
     // NOTE: code gen needed for HW4
     if (currentToken == procsym)
     {
+      insertInst("jmp", 0, 0); // If m value is later corrected after procedure declarations...
       currentToken = getToken();
       if (currentToken != identsym)
         errorMSG("COMPILE ERROR: Identifier must follow procedure");
@@ -364,19 +361,22 @@ void block()
       if (currentToken != semicolonsym)
         errorMSG("COMPILE ERROR: Semicolon expected");
       currentToken = getToken();
-
+      
+      insertInst("opr", 0, 0);
+      
       lexiLevel--;
 
     }
 
     // increment the stack pointer, including the initialized variables
     insertInst("inc", 0, 4 + numOfVars);
-
-    statement(); // need a jump statement that jumps to the code here
+    if (assemblyCode[0].op == 7) //If there was a procedure, the first instruction is a jump,
+      assemblyCode[0].m = numOfIns - 1;  //So correct it's m value to the beginning of the main procedure.
+    statement();
 
 }
 
-void statement(int lexiLevel)
+void statement()
 {
     if (currentToken == identsym)
     {
@@ -419,11 +419,11 @@ void statement(int lexiLevel)
         errorMSG("COMPILER ERROR: Identification symbol expected.");
 
       symbol newSym = LookupSymbol(getIdentifier(), lexiLevel);
-      if (newSym.name[0] == '\0')
-        errorMSG("COMPILER ERROR: Procedure not identified");
+      //if (newSym.name[0] == '\0')
+      //  errorMSG("COMPILER ERROR: Procedure not identified");
 
       // the procedure symbol's lexi level should point to the correct static link (hopefully)
-      insertInst("cal", newSym.level, newSym.offset);
+      insertInst("cal", newSym.level, newSym.offset - 1);
 
 
 
