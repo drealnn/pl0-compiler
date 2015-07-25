@@ -62,6 +62,8 @@ instruction assemblyCode[500];
 // stack that performs postfix processing for arithmetic expressions
 stackNode * expressionStack;
 
+int procStart[3];
+int procCount = 0;
 int numOfIns = 0;
 int numOfSymbols;
 int numOfVars;
@@ -178,6 +180,9 @@ symbol LookupSymbol(char* name, int level)
                    tempSymbol = &symbolTable[i];
                }
            }
+         
+           else
+             tempSymbol = &symbolTable[i];
        }
    }
 
@@ -254,9 +259,9 @@ void program()
 
 void block()
 {
-
-    // constant declarations
-
+    int procIns = 0;
+    int currentProc = 0;
+    // constant declarations  
     if (currentToken == constsym)
     {
        do
@@ -337,7 +342,9 @@ void block()
     // NOTE: code gen needed for HW4
     if (currentToken == procsym)
     {
-      insertInst("jmp", 0, 0); // If m value is later corrected after procedure declarations...
+      procCount++;
+      if (numOfIns == 0)
+        insertInst("jmp", 0, 0); // If m value is later corrected after procedure declarations...
       currentToken = getToken();
       if (currentToken != identsym)
         errorMSG("COMPILE ERROR: Identifier must follow procedure");
@@ -347,16 +354,21 @@ void block()
       newSym.level = lexiLevel;
       strcpy(newSym.name, getIdentifier());
       newSym.offset = numOfIns + 1; // store the current address of the procedure here
+      procIns = numOfSymbols;
       symbolTable[numOfSymbols++] = newSym;
 
-
+      
+      
       currentToken = getToken();
       if (currentToken != semicolonsym)
         errorMSG("COMPILE ERROR: Semicolon expected following procedure declaration");
       currentToken = getToken();
-
+      //printf("Prior to Block Proc Count: %d for Proc %s\n", procCount, newSym.name);
+      currentProc = procCount;
       lexiLevel++;
+
       block();
+      // procCount is accurate total by here
 
       if (currentToken != semicolonsym)
         errorMSG("COMPILE ERROR: Semicolon expected");
@@ -365,6 +377,32 @@ void block()
       insertInst("opr", 0, 0);
       
       lexiLevel--;
+      
+      // increment the stack pointer, including the initialized variables
+      insertInst("inc", 0, 4 + numOfVars);
+      if (assemblyCode[0].op == 7) //If there was a procedure, the first instruction is a jump,
+        assemblyCode[0].m = numOfIns - 1;  //So correct it's m value to the beginning of the main procedure.
+      
+      if (currentProc == procCount)
+      {
+        symbolTable[procIns].offset = 2;
+        procStart[0] = 2;
+        procStart[1] = numOfIns;
+      }
+      else if (currentProc == procCount - 1)
+      {
+        procStart[2] = numOfIns;
+        symbolTable[procIns].offset = procStart[1];
+      } 
+      else if (currentProc == procCount - 2)
+      {
+        symbolTable[procIns].offset = procStart[2];
+      }
+
+      statement();
+      
+      //printf("After Procedure: %s Offset: %d Current numOfIns: %d ProcCount: %d\n", symbolTable[procIns].name, symbolTable[procIns].offset, numOfIns, procCount);
+      return;
 
     }
 
@@ -417,11 +455,21 @@ void statement()
       currentToken = getToken();
       if (currentToken != identsym)
         errorMSG("COMPILER ERROR: Identification symbol expected.");
-
+      
       symbol newSym = LookupSymbol(getIdentifier(), lexiLevel);
       //if (newSym.name[0] == '\0')
       //  errorMSG("COMPILER ERROR: Procedure not identified");
 
+      //printf("\nCalling Symbol %s val: %d level: %d offtset: %d \n", newSym.name, newSym.val, newSym.level, newSym.offset);
+        
+        /*
+        int kind; // const = 1, var = 2, proc = 3
+        char name[12];
+        int val;
+        int level;
+        int offset;
+        */
+      
       // the procedure symbol's lexi level should point to the correct static link (hopefully)
       insertInst("cal", newSym.level, newSym.offset - 1);
 

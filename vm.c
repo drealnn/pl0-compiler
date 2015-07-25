@@ -197,7 +197,7 @@ void instructionDecode()
         break;
     case(5):
     //"cal";
-        //Creating a new activation record
+       //Creating a new activation record
        // while (arMarkers[i] != -1)
        //     i++;
        // arMarkers[i] = sp+1;
