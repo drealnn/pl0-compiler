@@ -53,6 +53,7 @@ void readInput(FILE* in);
 void instructionDecode();
 void oprExecute(int m);
 void printStack();
+void InitStack();
 int base(int b, int l);
 
 // push and pop remove/create nodes at the end of the LL while peek looks at the first node
@@ -70,7 +71,7 @@ int vm(int v)
 
     FILE* fptr = fopen("mcode.txt", "r");
     out = fopen("stacktrace.txt", "w");
-
+    InitStack(); //Sets all stack values to 0.
     stack[1] = 0;
     stack[2] = 0;
     stack[3] = 0;
@@ -112,7 +113,14 @@ int vm(int v)
 }
 
 //---------------FUNCTIONS-------------------------------------
-
+void InitStack()
+{
+  int i;
+  for (i = 0; i < MAX_STACK_HEIGHT; i++)
+  {
+    stack[i] = 0;
+  }
+}
 void readInput(FILE* in)
 {
     // reads in the instructions from the input file into the code array
@@ -183,7 +191,8 @@ void instructionDecode()
         break;
     case(4):
     //"sto";
-        stack[base(bp, ir.l) + ir.m] = stack[sp];   
+        stack[base(bp, ir.l) + ir.m] = stack[sp];  
+        fprintf(out, "\nBase: %d\n", base(bp,ir.l));
         sp--;                                       // pop the stack
           // store value l levels down to index m
         break;
@@ -208,10 +217,6 @@ void instructionDecode()
     case(6):
     //"inc";
         sp += ir.m;                                 // increment the stack by m
-        for (i = sp - 1; i >= bp - 1; i--)
-        {
-          stack[i] = 0;
-        }
         break;
     case(7):
     //"jmp";
