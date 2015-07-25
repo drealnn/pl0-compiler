@@ -39,8 +39,12 @@ int getToken();
 char* getIdentifier();
 int getNumber();
 
-// looks up a symbol in the symbol table via its identifier
-symbol LookupSymbol(char* name);
+// looks up a symbol in the symbol table via its identifier.
+//if the symbol matches the identifier and is less than(global) or equal (current scope) to the current level, return it.
+symbol LookupSymbol(char* name, int level);
+
+// if a symbol exists with the same ident and level (current scope), throw an error
+void checkSymbol(char* name, int level);
 
 void cleanArray();
 void insertInst(char* op, int l, int m);
@@ -63,6 +67,7 @@ int numOfSymbols;
 int numOfVars;
 int currentToken;
 char ident[12];
+int lexiLevel;
 
 const char *opStringAry2[] = {"lit","opr","lod","sto","cal","inc","jmp","jpc","sio"};
 
@@ -153,20 +158,36 @@ int errorMSG(char * str)
     exit(1);
 }
 
-symbol LookupSymbol(char* name)
+symbol LookupSymbol(char* name, int level)
 {
    int i;
+   int maxLevel = 0;
+   symbol *tempSymbol;
+   tempSymbol->name[0] = '\0';
    for (i = 0; i < numOfSymbols; i++)
    {
        if (strcmp(name, symbolTable[i].name) == 0)
-        return symbolTable[i];
+       {
+           // check the symbol if its in a global or local domain
+           if (symbolTable[i].level <= level)
+           {
+               // we want the symbol closest to local
+               if (symbolTable[i].level >= maxLevel)
+               {
+                   maxLevel = symbolTable[i].level;
+                   tempSymbol = &symbolTable[i];
+               }
+           }
+
+
+       }
    }
 
 
    //errorMSG("COMPILER ERROR: undeclared variable");
-   symbol newSym;
-   newSym.name[0] = '\0';
-   return newSym;
+   //symbol newSym;
+   //newSym.name[0] = '\0';
+   return *tempSymbol;
 }
 
 void insertInst(char* op, int l, int m)
@@ -224,6 +245,8 @@ void program()
 
     currentToken = getToken();
 
+    lexiLevel = 0;
+
     block();
 
     if (currentToken != periodsym)
@@ -235,6 +258,7 @@ void program()
 
 void block()
 {
+
     // constant declarations
 
     if (currentToken == constsym)
@@ -249,11 +273,11 @@ void block()
 
            newSym.kind = 1;
            strcpy(newSym.name, getIdentifier());
-           newSym.level = 0;
+           newSym.level = lexiLevel;
            newSym.offset = -1;
 
-           if (LookupSymbol(newSym.name).name[0] != '\0')
-            errorMSG("COMPILER ERROR: Symbol has already been defined");
+           //if (LookupSymbol(newSym.name, lexiLevel).name[0] != '\0')
+           // errorMSG("COMPILER ERROR: Symbol has already been defined");
 
            currentToken = getToken();
            if (currentToken != eqlsym)
@@ -264,7 +288,7 @@ void block()
             errorMSG("COMPILE ERROR: integer value expected for constant declaration");
 
            newSym.val = getNumber();
-           symbolTable[numOfSymbols++] = newSym;
+           symbolTable[numOfSymbols++] = newSym; // modify insert for two-dimensional array
 
            currentToken = getToken();
 
@@ -290,13 +314,13 @@ void block()
 
            strcpy(newSym.name, getIdentifier());
            newSym.kind = 2;
-           newSym.level = 0;
+           newSym.level = lexiLevel;
            newSym.offset = 4 + numOfVars++;
 
-           if (LookupSymbol(newSym.name).name[0] != '\0')
-            errorMSG("COMPILER ERROR: Symbol has already been defined");
+           //if (LookupSymbol(newSym.name, lexiLevel).name[0] != '\0')
+            //errorMSG("COMPILER ERROR: Symbol has already been defined");
 
-           symbolTable[numOfSymbols++] = newSym;
+           symbolTable[numOfSymbols++] = newSym; // modify insert for two-dimensional array
 
 
            currentToken = getToken();
@@ -320,33 +344,44 @@ void block()
       currentToken = getToken();
       if (currentToken != identsym)
         errorMSG("COMPILE ERROR: Identifier must follow procedure");
-      getIdentifier();  //Do something with this
+
+      symbol newSym;
+      newSym.kind = 2;
+      newSym.level = lexiLevel;
+      strcpy(newSym.name, getIdentifier());
+      newSym.offset = numOfIns + 1; // store the current address of the procedure here
+      symbolTable[numOfSymbols++] = newSym;
+
+
       currentToken = getToken();
       if (currentToken != semicolonsym)
         errorMSG("COMPILE ERROR: Semicolon expected following procedure declaration");
       currentToken = getToken();
 
+      lexiLevel++;
       block();
 
       if (currentToken != semicolonsym)
         errorMSG("COMPILE ERROR: Semicolon expected");
       currentToken = getToken();
 
+      lexiLevel--;
+
     }
-  
+
     // increment the stack pointer, including the initialized variables
     insertInst("inc", 0, 4 + numOfVars);
-  
-    statement();
+
+    statement(); // need a jump statement that jumps to the code here
 
 }
 
-void statement()
+void statement(int lexiLevel)
 {
     if (currentToken == identsym)
     {
 
-        symbol newSym = LookupSymbol(getIdentifier());
+        symbol newSym = LookupSymbol(getIdentifier(), lexiLevel);
 
         if (newSym.name[0] == '\0')
         {
@@ -369,7 +404,10 @@ void statement()
         // execute each operator left on the stack
 
         // store the value of the expression (at top of the stack) to the offset of newsym (STO)
-        insertInst("sto", newSym.level, newSym.offset);
+        // NOTE:
+        // The closer the variable is to the procedure, the smaller the "l" parameter is.
+        // for example, accessing a variable within the same activation record will have an "l" level of 0.
+        insertInst("sto", lexiLevel - newSym.level, newSym.offset);
 
 
     }
@@ -380,7 +418,14 @@ void statement()
       if (currentToken != identsym)
         errorMSG("COMPILER ERROR: Identification symbol expected.");
 
-      getIdentifier();  //Do something with this.
+      symbol newSym = LookupSymbol(getIdentifier(), lexiLevel);
+      if (newSym.name[0] == '\0')
+        errorMSG("COMPILER ERROR: Procedure not identified");
+
+      // the procedure symbol's lexi level should point to the correct static link (hopefully)
+      insertInst("cal", newSym.level, newSym.offset);
+
+
 
       currentToken = getToken();
     }
@@ -394,7 +439,7 @@ void statement()
             currentToken = getToken();
             statement();
         }
-        
+
         if (currentToken != endsym){
           printf("Token supposed to be end: %d\n", currentToken);
           errorMSG("COMPILER ERROR: \'END\' not found");}
@@ -429,7 +474,7 @@ void statement()
       }
 
     }
-    
+
 
     else if (currentToken == writesym || currentToken == readsym)
     {
@@ -444,15 +489,15 @@ void statement()
       if (currentToken != identsym)
         errorMSG("COMPILER ERROR: Read/Write must be followed by identifier.");
 
-      symbol newSymbol = LookupSymbol(getIdentifier()); //Do something with it.
+      symbol newSymbol = LookupSymbol(getIdentifier(), lexiLevel); //Do something with it.
 
       // if write, output load variable to top of the stack, then output to console
       if (write)
       {
           if (newSymbol.kind == 1)
-            insertInst("lit", 0, newSymbol.val);
+            insertInst("lit", lexiLevel - newSymbol.level, newSymbol.val);
           else
-            insertInst("lod", 0, newSymbol.offset);
+            insertInst("lod", lexiLevel - newSymbol.level, newSymbol.offset);
 
           insertInst("sio", 0, 0);
       }
@@ -463,7 +508,7 @@ void statement()
             errorMSG("COMPILER ERROR: Cannot write to constant");
 
           insertInst("sio", 0, 1);
-          insertInst("sto", 0, newSymbol.offset);
+          insertInst("sto", lexiLevel - newSymbol.level, newSymbol.offset);
       }
 
       currentToken = getToken();
@@ -633,7 +678,7 @@ void factor()
   if (currentToken == identsym)
   {
     // load variable or constant into the stack from the symbol table
-    symbol newSym = LookupSymbol(getIdentifier()); //Do Something with this.
+    symbol newSym = LookupSymbol(getIdentifier(), lexiLevel); //Do Something with this.
 
     if (newSym.name[0] == '\0')
         {
@@ -641,9 +686,9 @@ void factor()
         }
 
     if (newSym.kind == 1)
-        insertInst("lit", 0, newSym.val);
+        insertInst("lit", lexiLevel - newSym.level, newSym.val);
     else if (newSym.kind == 2)
-        insertInst("lod", 0, newSym.offset);
+        insertInst("lod", lexiLevel - newSym.level, newSym.offset);
 
     currentToken = getToken();
   }

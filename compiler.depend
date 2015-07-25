@@ -38,7 +38,7 @@
 
 1436526413 c:\users\daniel\desktop\parser\compiler\tokenenum.h
 
-1436525308 source:c:\users\daniel\desktop\parser\compiler\compiler\main.c
+1436909693 source:c:\users\daniel\desktop\parser\compiler\compiler\main.c
 	<stdio.h>
 	<stdlib.h>
 
@@ -49,7 +49,7 @@
 
 1433969900 c:\users\daniel\desktop\parser\compiler\compiler\vector.h
 
-1436708894 source:c:\users\daniel\desktop\parser\compiler\compiler\parser.c
+1436909071 source:c:\users\daniel\desktop\parser\compiler\compiler\parser.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -60,7 +60,7 @@
 
 1436688694 c:\users\daniel\desktop\parser\compiler\compiler\stack.h
 
-1436653476 source:c:\users\daniel\desktop\parser\compiler\compiler\scanner.c
+1436909071 source:c:\users\daniel\desktop\parser\compiler\compiler\scanner.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -71,4 +71,8 @@
 	<stdio.h>
 	<stdlib.h>
 	"stack.h"
+
+1436909665 source:c:\users\daniel\desktop\parser\compiler\compiler\vm.c
+	<stdio.h>
+	<stdlib.h>
 
