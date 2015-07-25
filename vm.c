@@ -208,6 +208,10 @@ void instructionDecode()
     case(6):
     //"inc";
         sp += ir.m;                                 // increment the stack by m
+        for (i = sp - 1; i >= bp - 1; i--)
+        {
+          stack[i] = 0;
+        }
         break;
     case(7):
     //"jmp";
