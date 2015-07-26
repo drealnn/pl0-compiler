@@ -66,10 +66,12 @@ int procStart[3];
 int procCount = 0;
 int numOfIns = 0;
 int numOfSymbols;
-int numOfVars;
+//int numOfVars;
 int currentToken;
 char ident[12];
 int lexiLevel;
+int procNum;
+int arrayOfIndexes[30];
 
 const char *opStringAry2[] = {"lit","opr","lod","sto","cal","inc","jmp","jpc","sio"};
 
@@ -93,7 +95,7 @@ int parser(int a)
 
 
   numOfSymbols = 0;
-  numOfVars = 0;
+//  numOfVars = 0;
   numOfIns = 0;
 
   program();
@@ -181,8 +183,8 @@ symbol LookupSymbol(char* name, int level)
                }
            }
 
-           else
-             tempSymbol = &symbolTable[i];
+           //else
+             //tempSymbol = &symbolTable[i];
        }
    }
 
@@ -214,7 +216,7 @@ void insertInst(char* op, int l, int m)
 void dumpSymbolTable()
 {
     int i;
-    printf("Number of symbols:%d, number of vars:%d\n",numOfSymbols, numOfVars);
+//    printf("Number of symbols:%d, number of vars:%d\n",numOfSymbols, numOfVars);
     for (i = 0; i < numOfSymbols; i++)
     {
         printf("%s", symbolTable[i].name);
@@ -247,6 +249,7 @@ void program()
     currentToken = getToken();
 
     lexiLevel = 0;
+    procNum = 0;
 
     block();
 
@@ -261,6 +264,9 @@ void block()
 {
     int procIns = 0;
     int currentProc = 0;
+    int numOfVars = 0;
+
+
     // constant declarations
     if (currentToken == constsym)
     {
@@ -337,14 +343,18 @@ void block()
 
     }
 
+    // jump should be here
+    arrayOfIndexes[lexiLevel] = numOfIns;
+    insertInst("jmp", 0, 500);
+
 
     // Nested procedure declaration
     // NOTE: code gen needed for HW4
-    if (currentToken == procsym)
+    while (currentToken == procsym)
     {
-      procCount++;
-      if (numOfIns == 0)
-        insertInst("jmp", 0, 0); // If m value is later corrected after procedure declarations...
+     // procCount++;
+      //if (numOfIns == 0)
+      //  insertInst("jmp", 0, 0); // If m value is later corrected after procedure declarations...
       currentToken = getToken();
       if (currentToken != identsym)
         errorMSG("COMPILE ERROR: Identifier must follow procedure");
@@ -364,7 +374,7 @@ void block()
         errorMSG("COMPILE ERROR: Semicolon expected following procedure declaration");
       currentToken = getToken();
       //printf("Prior to Block Proc Count: %d for Proc %s\n", procCount, newSym.name);
-      currentProc = procCount;
+      //currentProc = procCount;
       lexiLevel++;
 
       block();
@@ -374,12 +384,16 @@ void block()
         errorMSG("COMPILE ERROR: Semicolon expected");
       currentToken = getToken();
 
+
+
       insertInst("opr", 0, 0);
+
+
 
       lexiLevel--;
 
       // increment the stack pointer, including the initialized variables
-      insertInst("inc", 0, 4 + numOfVars);
+      /*insertInst("inc", 0, 4 + numOfVars);
       if (assemblyCode[0].op == 7) //If there was a procedure, the first instruction is a jump,
         assemblyCode[0].m = numOfIns - 1;  //So correct it's m value to the beginning of the main procedure.
 
@@ -398,26 +412,34 @@ void block()
       {
         symbolTable[procIns].offset = procStart[2];
       }
-
-      statement();
+    */
+     // statement();
 
       //printf("After Procedure: %s Offset: %d Current numOfIns: %d ProcCount: %d\n", symbolTable[procIns].name, symbolTable[procIns].offset, numOfIns, procCount);
-      return;
+      //return;
 
     }
 
+    // Jump to the main code block here. Update jump instruction
+    assemblyCode[arrayOfIndexes[lexiLevel]].m = numOfIns;
+
     // increment the stack pointer, including the initialized variables
     insertInst("inc", 0, 4 + numOfVars);
-    if (assemblyCode[0].op == 7) //If there was a procedure, the first instruction is a jump,
-      assemblyCode[0].m = numOfIns - 1;  //So correct it's m value to the beginning of the main procedure.
+
+    //if (assemblyCode[0].op == 7) //If there was a procedure, the first instruction is a jump,
+    //  assemblyCode[0].m = numOfIns - 1;  //So correct it's m value to the beginning of the main procedure.
+
+
     statement();
 
 }
 
 void statement()
 {
+
     if (currentToken == identsym)
     {
+
 
         symbol newSym = LookupSymbol(getIdentifier(), lexiLevel);
 
@@ -437,6 +459,8 @@ void statement()
         expression();
         executeStackLeftovers();
 
+
+
         //printf("successful expression calculation\n");
 
         // execute each operator left on the stack
@@ -452,6 +476,7 @@ void statement()
     // NOTE: code gen needed for HW4
     else if (currentToken == callsym)
     {
+
       currentToken = getToken();
       if (currentToken != identsym)
         errorMSG("COMPILER ERROR: Identification symbol expected.");
@@ -471,7 +496,7 @@ void statement()
         */
 
       // the procedure symbol's lexi level should point to the correct static link (hopefully)
-      insertInst("cal", newSym.level, newSym.offset - 1);
+      insertInst("cal", newSym.level, newSym.offset);
 
 
 
@@ -479,7 +504,12 @@ void statement()
     }
     else if (currentToken == beginsym)
     {
+
+
         currentToken = getToken();
+
+
+
         statement();
 
         while (currentToken == semicolonsym)
@@ -488,11 +518,14 @@ void statement()
             statement();
         }
 
+
         if (currentToken != endsym){
           printf("Token supposed to be end: %d\n", currentToken);
           errorMSG("COMPILER ERROR: \'END\' not found");}
 
         currentToken = getToken();
+
+
     }
 
     else if (currentToken == ifsym)
