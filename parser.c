@@ -538,14 +538,23 @@ void statement()
 
      // if conditional fails, execute jump instruction skipping if body
       int jmpInsIndex = numOfIns;
-      insertInst("jpc", 0, -1);
+      insertInst("jpc", 0, 300);
+
+
 
       statement();
+
+      // if the "if" statement succeeds, we need to jump over the else statement
+      int jmpOverElseIndex = numOfIns;
+      insertInst("jmp", 0, 300);
+
 
       // update the jump instruction with the correct PC value pointing to the end of the "if" body.
       instruction jump = assemblyCode[jmpInsIndex];
       jump.m = numOfIns;
       assemblyCode[jmpInsIndex] = jump;
+
+      //currentToken = getToken();
 
       // NOTE: code gen needed for HW4
       if (currentToken == elsesym)
@@ -553,6 +562,9 @@ void statement()
         currentToken = getToken();
         statement();
       }
+
+
+      assemblyCode[jmpOverElseIndex].m = numOfIns;
 
     }
 
