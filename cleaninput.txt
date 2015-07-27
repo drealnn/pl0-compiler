@@ -1,12 +1,15 @@
-var a, b, c;
+const n = 13;
+var i, h;
+procedure sub;
+ const k = 7;
+ var j, h;
+ begin
+  j:=n;
+  i:=1;
+  h:=k;
+ end;
 begin
- a:=1;
- b:=2;
- c:=99;
- if a > b then
-  write a;
-
- write c;
- 
-
-end.XIT READER\plugins\y@ð#›
+ i:=3; 
+ h:=0;
+ call sub;
+end.\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine CoÐè[¯îQ
